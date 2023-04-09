@@ -59,22 +59,33 @@ export function ModalEvent(props: {
 
   return (
     <>
-      <Modal isOpen={isOpen} handler={handler} header={title} submit={() => submit({
-        cityName: cities?.[selectedCityIndex ?? 0].formatted,
-        date: currentDate,
-        lat:cities?.[selectedCityIndex ?? 0].geometry.lat,
-        lng: cities?.[selectedCityIndex ?? 0].geometry.lng,
-        temperatureMax: weatherInfo?.temp.max,
-        temperatureMin: weatherInfo?.temp.min,
-        title: eventName,
-        weatherDescr: weatherInfo?.weather[0].description,
-        weatherIcon: weatherInfo?.weather[0].icon,
-        weatherId: weatherInfo?.weather[0].id,
-        weatherMain: weatherInfo?.weather[0].main
-      } as CalendarEvent)}>
+      <Modal
+        isOpen={isOpen}
+        handler={handler}
+        header={title}
+        submit={() =>
+          submit({
+            cityName: cities?.[selectedCityIndex ?? 0].formatted,
+            date: currentDate,
+            lat: cities?.[selectedCityIndex ?? 0].geometry.lat,
+            lng: cities?.[selectedCityIndex ?? 0].geometry.lng,
+            temperatureMax: weatherInfo?.temp.max,
+            temperatureMin: weatherInfo?.temp.min,
+            title: eventName,
+            weatherDescr: weatherInfo?.weather[0].description,
+            weatherIcon: weatherInfo?.weather[0].icon,
+            weatherId: weatherInfo?.weather[0].id,
+            weatherMain: weatherInfo?.weather[0].main,
+          } as CalendarEvent)
+        }
+      >
         <div className={getClassName(inputClassName)}>
           <label htmlFor="name">Event name</label>
-          <input name="name" value={eventName} onChange={(e)=> setEventName(e.target.value)}></input>
+          <input
+            name="name"
+            value={eventName}
+            onChange={(e) => setEventName(e.target.value)}
+          ></input>
         </div>
         <div className={getClassName(inputClassName)}>
           <label htmlFor="city">Event city</label>

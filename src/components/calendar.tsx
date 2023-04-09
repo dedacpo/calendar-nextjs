@@ -50,9 +50,10 @@ export default function Calendar() {
   const getData = async () => {
     const resp = await (
       await fetch(
-        `/api/firestore/getAllDocuments?dateStart=${new Date(selectedYear,selectedMonth)}&dateEnd=${lastDayOfMonth(
-          currentDay
-        )}`
+        `/api/firestore/getAllDocuments?dateStart=${new Date(
+          selectedYear,
+          selectedMonth
+        )}&dateEnd=${lastDayOfMonth(currentDay)}`
       )
     ).json();
 
@@ -60,21 +61,18 @@ export default function Calendar() {
   };
 
   const eventSubmit = async (event: CalendarEvent) => {
-    console.log("event", event) 
+    console.log("event", event);
     const resp = await (
-      await fetch(
-        `/api/firestore/addDocument`,
-        {
-          method: "POST",
-          body: JSON.stringify(event)
-        }
-      )
-    ).json(); 
+      await fetch(`/api/firestore/addDocument`, {
+        method: "POST",
+        body: JSON.stringify(event),
+      })
+    ).json();
 
     console.log("resp", resp);
     setEventModalOpened(false);
-  }
- 
+  };
+
   useEffect(() => {
     const newDate = new Date(selectedYear, selectedMonth);
     setCurrentDay(newDate);
