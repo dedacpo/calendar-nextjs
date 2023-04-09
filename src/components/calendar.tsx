@@ -1,8 +1,20 @@
 import { WeekDay } from "@/enums/weekday";
 import { Month } from "@/enums/month";
-import { getDaysInMonth, startOfMonth } from "date-fns";
+import { getDaysInMonth, lastDayOfMonth, startOfMonth } from "date-fns";
 import { useEffect, useState } from "react";
 import { ModalEvent } from "./modalEvent";
+import { firestore } from "../../firebase/clientApp";
+import {
+  DocumentData,
+  QueryDocumentSnapshot,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { CalendarEvent } from "@/types/calendarEvent";
 
 export default function Calendar() {
   const weekDays = [0, 1, 2, 3, 4, 5, 6];
@@ -35,6 +47,34 @@ export default function Calendar() {
 
   const [clickedDay, setClickedDay] = useState<number>();
 
+  const getData = async () => {
+    const resp = await (
+      await fetch(
+        `/api/firestore/getAllDocuments?dateStart=${new Date(selectedYear,selectedMonth)}&dateEnd=${lastDayOfMonth(
+          currentDay
+        )}`
+      )
+    ).json();
+
+    console.log("resp", resp);
+  };
+
+  const eventSubmit = async (event: CalendarEvent) => {
+    console.log("event", event) 
+    const resp = await (
+      await fetch(
+        `/api/firestore/addDocument`,
+        {
+          method: "POST",
+          body: JSON.stringify(event)
+        }
+      )
+    ).json(); 
+
+    console.log("resp", resp);
+    setEventModalOpened(false);
+  }
+ 
   useEffect(() => {
     const newDate = new Date(selectedYear, selectedMonth);
     setCurrentDay(newDate);
@@ -68,6 +108,7 @@ export default function Calendar() {
       );
     }
     setDays(daysElements);
+    getData();
   }, [emptyDays]);
 
   return (
@@ -103,6 +144,7 @@ export default function Calendar() {
         handler={() => setEventModalOpened(false)}
         isOpen={eventModalOpened}
         clickedDate={new Date(selectedYear, selectedMonth, clickedDay)}
+        submit={eventSubmit}
       />
     </>
   );

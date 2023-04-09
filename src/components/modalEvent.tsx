@@ -5,18 +5,23 @@ import { useCallback, useState } from "react";
 import { City } from "@/types/city";
 import { DebounceInput } from "react-debounce-input";
 import { Weather } from "@/types/weather";
+import { CalendarEvent } from "@/types/calendarEvent";
 
 export function ModalEvent(props: {
   isOpen: boolean;
   handler: () => void;
   clickedDate: Date;
+  submit: (event: CalendarEvent) => void;
 }) {
-  const { isOpen, handler, clickedDate } = props;
+  const { isOpen, handler, clickedDate, submit } = props;
 
   const [cities, setCities] = useState<City[]>();
   const [selectedCityIndex, setSelectedCityIndex] = useState<number>();
   const [weatherInfo, setWeatherInfo] = useState<Weather>();
-  const [selectedTemperature, setSelectedTemperature] = useState<"Kelvin" | "Celsius" | "Fahrenheit">("Fahrenheit")
+  const [eventName, setEventName] = useState<string>();
+  const [selectedTemperature, setSelectedTemperature] = useState<
+    "Kelvin" | "Celsius" | "Fahrenheit"
+  >("Fahrenheit");
 
   const currentDate = new Date();
   const differenceDays = differenceInCalendarDays(clickedDate, currentDate);
@@ -50,14 +55,26 @@ export function ModalEvent(props: {
       console.log("res weather", resp);
     }
   };
-  console.log("selectedCityIndex", selectedCityIndex)
+  console.log("selectedCityIndex", selectedCityIndex);
 
   return (
     <>
-      <Modal isOpen={isOpen} handler={handler} header={title}>
+      <Modal isOpen={isOpen} handler={handler} header={title} submit={() => submit({
+        cityName: cities?.[selectedCityIndex ?? 0].formatted,
+        date: currentDate,
+        lat:cities?.[selectedCityIndex ?? 0].geometry.lat,
+        lng: cities?.[selectedCityIndex ?? 0].geometry.lng,
+        temperatureMax: weatherInfo?.temp.max,
+        temperatureMin: weatherInfo?.temp.min,
+        title: eventName,
+        weatherDescr: weatherInfo?.weather[0].description,
+        weatherIcon: weatherInfo?.weather[0].icon,
+        weatherId: weatherInfo?.weather[0].id,
+        weatherMain: weatherInfo?.weather[0].main
+      } as CalendarEvent)}>
         <div className={getClassName(inputClassName)}>
           <label htmlFor="name">Event name</label>
-          <input name="name"></input>
+          <input name="name" value={eventName} onChange={(e)=> setEventName(e.target.value)}></input>
         </div>
         <div className={getClassName(inputClassName)}>
           <label htmlFor="city">Event city</label>
@@ -88,21 +105,26 @@ export function ModalEvent(props: {
               })}
             </select>
           )}
-          {selectedCityIndex !== undefined && 
+          {selectedCityIndex !== undefined &&
           differenceDays >= 0 &&
           differenceDays < 7 ? (
             <>
               <div>
-                <img src={`http://openweathermap.org/img/wn/${weatherInfo?.weather[0].icon}@2x.png`} />
+                <img
+                  src={`http://openweathermap.org/img/wn/${weatherInfo?.weather[0].icon}@2x.png`}
+                />
                 <label>{weatherInfo?.weather[0].description}</label>
               </div>
-              {weatherInfo?.temp &&
-              <div>
-              <p>Max: <span>{fromKToF(weatherInfo.temp.max)}</span></p>
-              <p>Min: <span>{fromKToF(weatherInfo.temp.min)}</span></p>
-            </div>
-              }
-              
+              {weatherInfo?.temp && (
+                <div>
+                  <p>
+                    Max: <span>{fromKToF(weatherInfo.temp.max)}</span>
+                  </p>
+                  <p>
+                    Min: <span>{fromKToF(weatherInfo.temp.min)}</span>
+                  </p>
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -115,10 +137,10 @@ export function ModalEvent(props: {
   );
 }
 
-function fromKToF(value:number){
-    return ((value - 273.15) * 9/5 + 32).toFixed(0);
+function fromKToF(value: number) {
+  return (((value - 273.15) * 9) / 5 + 32).toFixed(0);
 }
 
-function fromKToC(value:number){
-    return  (value - 273.15).toFixed(0);
+function fromKToC(value: number) {
+  return (value - 273.15).toFixed(0);
 }

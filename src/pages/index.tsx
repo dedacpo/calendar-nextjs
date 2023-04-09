@@ -9,5 +9,5 @@ export default function Home() {
 }
 
 export async function getStaticProps() {
-  return { props: { isStatic: true } }
+  return { props: { isStatic: true } };
 }

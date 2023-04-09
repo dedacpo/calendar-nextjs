@@ -12,10 +12,11 @@ export type ModalProps = {
   handler: () => void;
   header: string;
   children: ReactNode;
+  submit: (data: any) => void
 };
 
 export function Modal(props: ModalProps) {
-  const { isOpen, handler, header, children } = props;
+  const { isOpen, handler, header, children, submit } = props;
 
   return (
     <>
@@ -32,7 +33,7 @@ export function Modal(props: ModalProps) {
             >
               <span>Cancel</span>
             </Button>
-            <Button variant="gradient" color="green" onClick={handler}>
+            <Button variant="gradient" color="green" onClick={submit}>
               <span>Confirm</span>
             </Button>
           </DialogFooter>
