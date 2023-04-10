@@ -6,8 +6,10 @@ import { City } from "@/types/city";
 import { DebounceInput } from "react-debounce-input";
 import { Weather } from "@/types/weather";
 import { CalendarEvent } from "@/types/calendarEvent";
+import { WeatherIcon } from "./weatherIcon";
+import { fromKToF } from "@/utils/temperatureConversion";
 
-export function ModalEvent(props: {
+export function ModalNewEditEvent(props: {
   isOpen: boolean;
   handler: () => void;
   clickedDate: Date;
@@ -55,7 +57,6 @@ export function ModalEvent(props: {
       console.log("res weather", resp);
     }
   };
-  console.log("selectedCityIndex", selectedCityIndex);
 
   return (
     <>
@@ -124,6 +125,9 @@ export function ModalEvent(props: {
                 <img
                   src={`http://openweathermap.org/img/wn/${weatherInfo?.weather[0].icon}@2x.png`}
                 />
+                {weatherInfo?.weather[0].icon && (
+                  <WeatherIcon iconId={weatherInfo?.weather[0].icon} />
+                )}
                 <label>{weatherInfo?.weather[0].description}</label>
               </div>
               {weatherInfo?.temp && (
@@ -146,12 +150,4 @@ export function ModalEvent(props: {
       </Modal>
     </>
   );
-}
-
-function fromKToF(value: number) {
-  return (((value - 273.15) * 9) / 5 + 32).toFixed(0);
-}
-
-function fromKToC(value: number) {
-  return (value - 273.15).toFixed(0);
 }

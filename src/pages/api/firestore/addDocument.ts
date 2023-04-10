@@ -14,7 +14,10 @@ export default async function handler(
   res: NextApiResponse<DocumentData>
 ) {
   if (req.method === "POST") {
-    await addDoc(collection(firestore, "events"), JSON.parse(req.body));
+    await addDoc(collection(firestore, "events"), {
+      ...JSON.parse(req.body),
+      date: new Date(JSON.parse(req.body).date),
+    });
   }
 
   res.status(200).send({});

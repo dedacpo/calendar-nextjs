@@ -12,7 +12,7 @@ export type ModalProps = {
   handler: () => void;
   header: string;
   children: ReactNode;
-  submit: (data: any) => void;
+  submit?: (data: any) => void;
 };
 
 export function Modal(props: ModalProps) {

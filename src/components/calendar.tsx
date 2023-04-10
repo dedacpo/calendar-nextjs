@@ -1,20 +1,17 @@
 import { WeekDay } from "@/enums/weekday";
 import { Month } from "@/enums/month";
-import { getDaysInMonth, lastDayOfMonth, startOfMonth } from "date-fns";
-import { useEffect, useState } from "react";
-import { ModalEvent } from "./modalEvent";
-import { firestore } from "../../firebase/clientApp";
 import {
-  DocumentData,
-  QueryDocumentSnapshot,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+  differenceInCalendarDays,
+  getDaysInMonth,
+  isWeekend,
+  lastDayOfMonth,
+  startOfMonth,
+} from "date-fns";
+import { useEffect, useState } from "react";
+import { ModalNewEditEvent } from "./modaNewEditlEvent";
 import { CalendarEvent } from "@/types/calendarEvent";
+import getClassName from "@/utils/getClassName";
+import { ModalViewEvent } from "./modalViewEvents";
 
 export default function Calendar() {
   const weekDays = [0, 1, 2, 3, 4, 5, 6];
@@ -43,12 +40,17 @@ export default function Calendar() {
 
   const [days, setDays] = useState<JSX.Element[]>();
 
-  const [eventModalOpened, setEventModalOpened] = useState<boolean>(false);
+  const [eventModalNewWEditOpened, setEventModalNewWEditOpened] =
+    useState<boolean>(false);
+  const [eventModalViewOpened, setEventModalViewOpened] =
+    useState<boolean>(false);
 
   const [clickedDay, setClickedDay] = useState<number>();
 
+  const [eventsData, setEventsData] = useState<CalendarEvent[]>();
+
   const getData = async () => {
-    const resp = await (
+    const resp: CalendarEvent[] = await (
       await fetch(
         `/api/firestore/getAllDocuments?dateStart=${new Date(
           selectedYear,
@@ -56,21 +58,26 @@ export default function Calendar() {
         )}&dateEnd=${lastDayOfMonth(currentDay)}`
       )
     ).json();
-
-    console.log("resp", resp);
+    setEventsData(resp);
   };
 
   const eventSubmit = async (event: CalendarEvent) => {
-    console.log("event", event);
     const resp = await (
       await fetch(`/api/firestore/addDocument`, {
         method: "POST",
         body: JSON.stringify(event),
       })
     ).json();
+    setEventModalNewWEditOpened(false);
+  };
 
-    console.log("resp", resp);
-    setEventModalOpened(false);
+  const getEventsFromDate = (date: Date): CalendarEvent[] => {
+    const events =
+      eventsData?.filter(
+        (item) => differenceInCalendarDays(new Date(item.date), date) === 0
+      ) ?? [];
+
+    return events;
   };
 
   useEffect(() => {
@@ -81,33 +88,89 @@ export default function Calendar() {
   useEffect(() => {
     setDaysInMonth(getDaysInMonth(currentDay));
     setFirstDayOfMonth(startOfMonth(currentDay).getDay());
-  }, [currentDay]);
+  }, [currentDay, selectedMonth, selectedYear]);
 
   useEffect(() => {
-    setEmptyDays(firstDayOfMonth > 0 ? firstDayOfMonth - 1 : firstDayOfMonth);
-  }, [firstDayOfMonth]);
+    setEmptyDays(firstDayOfMonth);
+  }, [firstDayOfMonth, selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    getData();
+  }, [emptyDays, selectedMonth, selectedYear]);
 
   useEffect(() => {
     const daysElements = [];
-    console.log(daysInMonth, emptyDays);
-    for (let i = 0; i <= daysInMonth + emptyDays; i++) {
+    for (let i = 1; i <= daysInMonth + emptyDays; i++) {
+      const eventsFromDate = getEventsFromDate(
+        new Date(selectedYear, selectedMonth, i - emptyDays)
+      );
       daysElements.push(
         <button
-          key={`day-${i - firstDayOfMonth + 1}`}
+          className={getClassName(
+            i > firstDayOfMonth ? "hover:bg-[#ecf0f1]" : "cursor-default",
+            i > firstDayOfMonth &&
+              isWeekend(
+                new Date(selectedYear, selectedMonth, i - firstDayOfMonth)
+              )
+              ? "bg-[#f5f7f7] hover:bg-[#ecf0f1]"
+              : ""
+          )}
+          key={`day-${i - firstDayOfMonth}`}
           onClick={(e) => {
-            setEventModalOpened(true);
-            setClickedDay(i - firstDayOfMonth + 1);
+            if (i > firstDayOfMonth) {
+              eventsFromDate.length
+                ? setEventModalViewOpened(true)
+                : setEventModalNewWEditOpened(true);
+              setClickedDay(i - firstDayOfMonth);
+            }
           }}
         >
-          <div>
-            {i >= firstDayOfMonth && <span>{i - firstDayOfMonth + 1}</span>}
+          <div
+            className={getClassName(
+              i > firstDayOfMonth ? "border-[1px]" : "",
+              "border-[#ecf0f1] py-4 h-full"
+            )}
+          >
+            {i > firstDayOfMonth && (
+              <>
+                <div className="text-right px-4">
+                  <strong
+                    className={getClassName(
+                      differenceInCalendarDays(
+                        new Date(
+                          selectedYear,
+                          selectedMonth,
+                          i - firstDayOfMonth
+                        ),
+                        new Date()
+                      ) === 0
+                        ? "bg-[#e74c3c] px-4 py-3 rounded-full text-white"
+                        : ""
+                    )}
+                  >
+                    {i - firstDayOfMonth}
+                  </strong>
+                </div>
+                <div className="h-[150px] overflow-y-auto mt-4">
+                  {eventsFromDate.map((item) => {
+                    return (
+                      <div
+                        className="bg-[#1abc9c] p-2 border-[1px] border-white text-white"
+                        key={`eventId-${item.id}`}
+                      >
+                        {item.title}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </button>
       );
     }
     setDays(daysElements);
-    getData();
-  }, [emptyDays]);
+  }, [eventsData]);
 
   return (
     <>
@@ -134,15 +197,31 @@ export default function Calendar() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-7">
         {weekDays.map((item) => {
-          return <div key={`weekDay-${WeekDay[item]}`}>{WeekDay[item]}</div>;
+          return (
+            <div
+              className="bg-[#2980b9] text-white text-center p-2"
+              key={`weekDay-${WeekDay[item]}`}
+            >
+              <strong>{WeekDay[item]}</strong>
+            </div>
+          );
         })}
         {days?.map((item) => item)}
       </div>
-      <ModalEvent
-        handler={() => setEventModalOpened(false)}
-        isOpen={eventModalOpened}
+      <ModalNewEditEvent
+        handler={() => setEventModalNewWEditOpened(false)}
+        isOpen={eventModalNewWEditOpened}
         clickedDate={new Date(selectedYear, selectedMonth, clickedDay)}
         submit={eventSubmit}
+      />
+
+      <ModalViewEvent
+        handler={() => setEventModalViewOpened(false)}
+        isOpen={eventModalViewOpened}
+        clickedDate={new Date(selectedYear, selectedMonth, clickedDay)}
+        events={getEventsFromDate(
+          new Date(selectedYear, selectedMonth, clickedDay)
+        )}
       />
     </>
   );

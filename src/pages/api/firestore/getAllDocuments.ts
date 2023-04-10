@@ -30,8 +30,12 @@ export default async function handler(
   const result: DocumentData = [];
   querySnapshot.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
-    result.push(doc.data());
-    console.log(doc.id, " => ", doc.data());
+    result.push({
+      ...doc.data(),
+      date: new Date(doc.data().date.seconds * 1000),
+      id: doc.id,
+    });
   });
+  console.log(result);
   res.status(200).send(result);
 }

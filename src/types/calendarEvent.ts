@@ -1,4 +1,7 @@
+import { Timestamp } from "firebase/firestore";
+
 export type CalendarEvent = {
+  id: string;
   cityName: string;
   date: Date;
   lat: number;
