@@ -31,12 +31,15 @@ export function ModalViewEvent(props: {
 
   return (
     <>
-      <Modal 
-       secondaryAction={{
-        label: "close",
-        onClick: handler,
-      }}
-      isOpen={isOpen} handler={handler} header={title}>
+      <Modal
+        secondaryAction={{
+          label: "close",
+          onClick: handler,
+        }}
+        isOpen={isOpen}
+        handler={handler}
+        header={title}
+      >
         {events.map((item, index) => {
           return (
             <Accordion

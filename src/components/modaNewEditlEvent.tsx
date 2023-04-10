@@ -1,4 +1,9 @@
-import { addDays, differenceInCalendarDays, format, intlFormat } from "date-fns";
+import {
+  addDays,
+  differenceInCalendarDays,
+  format,
+  intlFormat,
+} from "date-fns";
 import { Modal } from "./modal";
 import { useCallback, useState } from "react";
 import { City } from "@/types/city";
@@ -68,21 +73,27 @@ export function ModalNewEditEvent(props: {
     setWeatherInfo(undefined);
     setCities(undefined);
     setEventName(undefined);
-  }
+  };
 
   return (
     <>
       <Modal
         isOpen={isOpen}
-        handler={() => {handler(); clearInfo()}}
+        handler={() => {
+          handler();
+          clearInfo();
+        }}
         header={title}
         secondaryAction={{
           label: "cancel",
-          onClick: () => {handler(); clearInfo()},
+          onClick: () => {
+            handler();
+            clearInfo();
+          },
         }}
         primaryAction={{
           label: "Submit",
-          onClick: () => {            
+          onClick: () => {
             submit({
               cityName: cities?.[selectedCityIndex ?? 0].formatted,
               date: clickedDate,
@@ -159,12 +170,20 @@ export function ModalNewEditEvent(props: {
                 />
               </div>
             </>
-          ) : selectedCityIndex && (           
-            <div className="my-4 flex">              
-              <p className="m-auto text-center">no weather information *<br/>
-              <small>We can only search for weather information for today and next 6 days from today (from {format(new Date(), 'MM/dd/yyyy')} to {format(addDays(new Date(), 7),'MM/dd/yyyy')})</small>
-              </p>
-            </div>
+          ) : (
+            selectedCityIndex && (
+              <div className="my-4 flex">
+                <p className="m-auto text-center">
+                  no weather information *<br />
+                  <small>
+                    We can only search for weather information for today and
+                    next 6 days from today (from{" "}
+                    {format(new Date(), "MM/dd/yyyy")} to{" "}
+                    {format(addDays(new Date(), 7), "MM/dd/yyyy")})
+                  </small>
+                </p>
+              </div>
+            )
           )}
         </div>
       </Modal>
