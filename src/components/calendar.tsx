@@ -12,6 +12,7 @@ import { ModalNewEditEvent } from "./modaNewEditlEvent";
 import { CalendarEvent } from "@/types/calendarEvent";
 import getClassName from "@/utils/getClassName";
 import { ModalViewEvent } from "./modalViewEvents";
+import { normalizeDate } from "@/utils/normalizeDate";
 
 export default function Calendar() {
   const weekDays = [0, 1, 2, 3, 4, 5, 6];
@@ -77,11 +78,8 @@ export default function Calendar() {
       eventsData?.filter((item) => {
         const itemDate = new Date(item.date);
         return (
-          differenceInCalendarDays(
-            new Date(item.date).getTime() +
-              Math.abs(itemDate.getTimezoneOffset() * 60000),
-            date
-          ) === 0
+          differenceInCalendarDays(new Date(normalizeDate(itemDate)), date) ===
+          0
         );
       }) ?? [];
 

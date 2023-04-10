@@ -78,7 +78,7 @@ export function ModalNewEditEvent(props: {
           onClick: () =>
             submit({
               cityName: cities?.[selectedCityIndex ?? 0].formatted,
-              date: currentDate,
+              date: clickedDate,
               lat: cities?.[selectedCityIndex ?? 0].geometry.lat,
               lng: cities?.[selectedCityIndex ?? 0].geometry.lng,
               temperatureMax: weatherInfo?.temp.max,
