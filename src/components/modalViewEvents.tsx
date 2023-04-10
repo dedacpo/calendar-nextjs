@@ -1,18 +1,19 @@
-import { differenceInCalendarDays, intlFormat } from "date-fns";
+import { intlFormat } from "date-fns";
 import { Modal } from "./modal";
 import { useState } from "react";
 import { CalendarEvent } from "@/types/calendarEvent";
 import Accordion from "./accordion";
-import { WeatherIcon } from "./weatherIcon";
-import { fromKToC, fromKToF } from "@/utils/temperatureConversion";
+import { Button } from "@material-tailwind/react";
+import { WeatherInfo } from "./weatherInfo";
 
 export function ModalViewEvent(props: {
   isOpen: boolean;
   handler: () => void;
   clickedDate: Date;
   events: CalendarEvent[];
+  onAddNewEvent: () => void;
 }) {
-  const { isOpen, handler, clickedDate, events } = props;
+  const { isOpen, handler, clickedDate, events, onAddNewEvent } = props;
 
   const [selectedTemperature, setSelectedTemperature] = useState<
     "Kelvin" | "Celsius" | "Fahrenheit"
@@ -33,90 +34,34 @@ export function ModalViewEvent(props: {
       <Modal isOpen={isOpen} handler={handler} header={title}>
         {events.map((item, index) => {
           return (
-            <Accordion title={item.title} isOpen={index === 0}>
+            <Accordion
+              key={`event-accordion-${item.id}`}
+              title={item.title}
+              isOpen={index === 0}
+            >
               <div className="flex justify-center">
                 <div>
                   <strong className="font-bold">{item.cityName}</strong>
-                  <div className="flex gap-2">
-                    {item.weatherIcon && (
-                      <WeatherIcon iconId={item.weatherIcon} />
-                    )}
-                    <div className="my-auto">
-                      <div className="flex gap-4">
-                        <div className="my-auto text-2xl">
-                          {selectedTemperature === "Kelvin" && (
-                            <>
-                              <span className="font-bold">
-                                {item.temperatureMax?.toFixed(0)}
-                              </span>
-                              {" / "}
-                              <span>{item.temperatureMin?.toFixed(0)}</span>
-                            </>
-                          )}
-                          {selectedTemperature === "Fahrenheit" && (
-                            <>
-                              <span className="font-bold">
-                                {fromKToF(item.temperatureMax)}
-                              </span>
-                              {" / "}
-                              <span>{fromKToF(item.temperatureMin)}</span>
-                            </>
-                          )}
-                          {selectedTemperature === "Celsius" && (
-                            <>
-                              <span className="font-bold">
-                                {fromKToC(item.temperatureMax)}
-                              </span>
-                              {" / "}
-                              <span>{fromKToC(item.temperatureMin)}</span>
-                            </>
-                          )}
-                        </div>
-                        <div className="my-auto text-base">
-                          <span
-                            onClick={() => setSelectedTemperature("Fahrenheit")}
-                            className={
-                              selectedTemperature === "Fahrenheit"
-                                ? "font-bold"
-                                : "cursor-pointer"
-                            }
-                          >
-                            °F
-                          </span>
-                          {" | "}
-                          <span
-                            onClick={() => setSelectedTemperature("Celsius")}
-                            className={
-                              selectedTemperature === "Celsius"
-                                ? "font-bold"
-                                : "cursor-pointer"
-                            }
-                          >
-                            °C
-                          </span>
-                          {" | "}
-                          <span
-                            onClick={() => setSelectedTemperature("Kelvin")}
-                            className={
-                              selectedTemperature === "Kelvin"
-                                ? "font-bold"
-                                : "cursor-pointer"
-                            }
-                          >
-                            K
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        {item.weatherMain} ({item.weatherDescr})
-                      </div>
-                    </div>
-                  </div>
+                  <WeatherInfo
+                    onSetSelectedTemperature={setSelectedTemperature}
+                    event={item}
+                    selectedTemperature={selectedTemperature}
+                  />
                 </div>
               </div>
             </Accordion>
           );
         })}
+        <div className="flex justify-center">
+          <Button
+            variant="filled"
+            color="teal"
+            onClick={onAddNewEvent}
+            className="mr-1 mt-6 text-2xl"
+          >
+            <span>+</span>
+          </Button>
+        </div>
       </Modal>
     </>
   );

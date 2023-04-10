@@ -9,14 +9,22 @@ import { Fragment, ReactNode, useState } from "react";
 
 export type ModalProps = {
   isOpen: boolean;
-  handler: () => void;
   header: string;
   children: ReactNode;
-  submit?: (data: any) => void;
+  primaryAction?: {
+    label: string;
+    onClick: (data?: any) => void;
+  };
+  secondaryAction?: {
+    label: string;
+    onClick: (data?: any) => void;
+  };
+  handler: () => void;
 };
 
 export function Modal(props: ModalProps) {
-  const { isOpen, handler, header, children, submit } = props;
+  const { isOpen, primaryAction, header, children, secondaryAction, handler } =
+    props;
 
   return (
     <>
@@ -24,19 +32,33 @@ export function Modal(props: ModalProps) {
         <Dialog open={isOpen} handler={handler}>
           <DialogHeader className="justify-center">{header}</DialogHeader>
           <DialogBody divider>{children}</DialogBody>
-          <DialogFooter>
-            <Button
-              variant="text"
-              color="red"
-              onClick={handler}
-              className="mr-1"
-            >
-              <span>Cancel</span>
-            </Button>
-            <Button variant="gradient" color="green" onClick={submit}>
-              <span>Confirm</span>
-            </Button>
-          </DialogFooter>
+          {(secondaryAction || primaryAction) && (
+            <>
+              <DialogFooter>
+                {secondaryAction && (
+                  <Button
+                    variant="outlined"
+                    color="teal"
+                    onClick={secondaryAction.onClick}
+                    className="mr-1"
+                  >
+                    <span>{secondaryAction.label}</span>
+                  </Button>
+                )}
+
+                {primaryAction && (
+                  <Button
+                    variant="filled"
+                    color="teal"
+                    onClick={primaryAction.onClick}
+                    className="mr-1"
+                  >
+                    <span>{primaryAction.label}</span>
+                  </Button>
+                )}
+              </DialogFooter>
+            </>
+          )}
         </Dialog>
       </Fragment>
     </>

@@ -3,8 +3,6 @@ import {
   DocumentData,
   addDoc,
   collection,
-  doc,
-  setDoc,
 } from "firebase/firestore";
 import { NextApiRequest, NextApiResponse } from "next";
 import { firestore } from "../../../../firebase/clientApp";

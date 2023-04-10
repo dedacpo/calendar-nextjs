@@ -1,13 +1,12 @@
 import { differenceInCalendarDays, intlFormat } from "date-fns";
 import { Modal } from "./modal";
-import getClassName from "@/utils/getClassName";
 import { useCallback, useState } from "react";
 import { City } from "@/types/city";
-import { DebounceInput } from "react-debounce-input";
 import { Weather } from "@/types/weather";
 import { CalendarEvent } from "@/types/calendarEvent";
-import { WeatherIcon } from "./weatherIcon";
-import { fromKToF } from "@/utils/temperatureConversion";
+import { Input, Select, Option } from "@material-tailwind/react";
+import debounce from "lodash.debounce";
+import { WeatherInfo } from "./weatherInfo";
 
 export function ModalNewEditEvent(props: {
   isOpen: boolean;
@@ -37,7 +36,14 @@ export function ModalNewEditEvent(props: {
     }
   );
 
-  const inputClassName = "flex flex-col";
+  const debouncedSave = useCallback(
+    debounce((nextValue) => {
+      handleCitySearch(nextValue);
+      setSelectedCityIndex(undefined);
+      setWeatherInfo(undefined);
+    }, 300),
+    [] // será criada apenas uma vez inicialmente
+  );
 
   const handleCitySearch = async (value: string) => {
     const resp = await (
@@ -54,7 +60,6 @@ export function ModalNewEditEvent(props: {
         )
       ).json();
       setWeatherInfo(resp.daily[differenceDays]);
-      console.log("res weather", resp);
     }
   };
 
@@ -64,87 +69,91 @@ export function ModalNewEditEvent(props: {
         isOpen={isOpen}
         handler={handler}
         header={title}
-        submit={() =>
-          submit({
-            cityName: cities?.[selectedCityIndex ?? 0].formatted,
-            date: currentDate,
-            lat: cities?.[selectedCityIndex ?? 0].geometry.lat,
-            lng: cities?.[selectedCityIndex ?? 0].geometry.lng,
-            temperatureMax: weatherInfo?.temp.max,
-            temperatureMin: weatherInfo?.temp.min,
-            title: eventName,
-            weatherDescr: weatherInfo?.weather[0].description,
-            weatherIcon: weatherInfo?.weather[0].icon,
-            weatherId: weatherInfo?.weather[0].id,
-            weatherMain: weatherInfo?.weather[0].main,
-          } as CalendarEvent)
-        }
+        secondaryAction={{
+          label: "cancel",
+          onClick: handler,
+        }}
+        primaryAction={{
+          label: "Submit",
+          onClick: () =>
+            submit({
+              cityName: cities?.[selectedCityIndex ?? 0].formatted,
+              date: currentDate,
+              lat: cities?.[selectedCityIndex ?? 0].geometry.lat,
+              lng: cities?.[selectedCityIndex ?? 0].geometry.lng,
+              temperatureMax: weatherInfo?.temp.max,
+              temperatureMin: weatherInfo?.temp.min,
+              title: eventName,
+              weatherDescr: weatherInfo?.weather[0].description,
+              weatherIcon: weatherInfo?.weather[0].icon,
+              weatherId: weatherInfo?.weather[0].id,
+              weatherMain: weatherInfo?.weather[0].main,
+            } as CalendarEvent),
+        }}
       >
-        <div className={getClassName(inputClassName)}>
-          <label htmlFor="name">Event name</label>
-          <input
-            name="name"
+        <div className="mt-4">
+          <Input
+            required
+            label="Event name"
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
-          ></input>
+          />
         </div>
-        <div className={getClassName(inputClassName)}>
-          <label htmlFor="city">Event city</label>
-          <DebounceInput
-            minLength={2}
-            debounceTimeout={300}
-            onChange={async (event) =>
-              await handleCitySearch(event.target.value)
-            }
+        <div className="mt-4">
+          <Input
+            required
+            label="Event city"
+            onChange={(e) => {
+              debouncedSave(e.target.value);
+            }}
           />
           {cities && (
-            <select
-              value={selectedCityIndex}
-              onChange={async (value) => {
-                setSelectedCityIndex(Number(value.target.value));
-                if (differenceDays >= 0 && differenceDays < 7) {
-                  await handleWeather(Number(value.target.value));
-                }
-              }}
-            >
-              <option>Select a city</option>
-              {cities?.map((item: City, index) => {
-                return (
-                  <option key={`option-${index}`} value={index}>
-                    {item.formatted}
-                  </option>
-                );
-              })}
-            </select>
+            <div className="mt-4">
+              <Select
+                value={selectedCityIndex?.toString()}
+                onChange={async (value) => {
+                  setSelectedCityIndex(Number(value));
+                  if (differenceDays >= 0 && differenceDays < 7) {
+                    await handleWeather(Number(value));
+                  }
+                }}
+                label="Select a city"
+              >
+                {cities?.map((item: City, index) => {
+                  return (
+                    <Option key={`option-${index}`} value={index.toString()}>
+                      {item.formatted}
+                    </Option>
+                  );
+                })}
+              </Select>
+            </div>
           )}
           {selectedCityIndex !== undefined &&
+          weatherInfo &&
           differenceDays >= 0 &&
           differenceDays < 7 ? (
             <>
-              <div>
-                <img
-                  src={`http://openweathermap.org/img/wn/${weatherInfo?.weather[0].icon}@2x.png`}
+              <div className="flex justify-center mt-4">
+                <WeatherInfo
+                  selectedTemperature={selectedTemperature}
+                  onSetSelectedTemperature={setSelectedTemperature}
+                  event={
+                    {
+                      weatherIcon: weatherInfo?.weather[0].icon,
+                      temperatureMax: weatherInfo.temp.max,
+                      temperatureMin: weatherInfo.temp.min,
+                      weatherDescr: weatherInfo.weather[0].description,
+                      weatherMain: weatherInfo.weather[0].main,
+                    } as CalendarEvent
+                  }
                 />
-                {weatherInfo?.weather[0].icon && (
-                  <WeatherIcon iconId={weatherInfo?.weather[0].icon} />
-                )}
-                <label>{weatherInfo?.weather[0].description}</label>
               </div>
-              {weatherInfo?.temp && (
-                <div>
-                  <p>
-                    Max: <span>{fromKToF(weatherInfo.temp.max)}</span>
-                  </p>
-                  <p>
-                    Min: <span>{fromKToF(weatherInfo.temp.min)}</span>
-                  </p>
-                </div>
-              )}
             </>
           ) : (
-            <>
-              <div>no weather information</div>
-            </>
+            <div className="my-4 flex">
+              <p className="m-auto">no weather information</p>
+            </div>
           )}
         </div>
       </Modal>

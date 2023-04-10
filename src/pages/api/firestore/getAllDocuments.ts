@@ -1,4 +1,3 @@
-import { City } from "@/types/city";
 import {
   DocumentData,
   collection,
@@ -29,13 +28,14 @@ export default async function handler(
 
   const result: DocumentData = [];
   querySnapshot.forEach((doc) => {
-    // doc.data() is never undefined for query doc snapshots
     result.push({
       ...doc.data(),
-      date: new Date(doc.data().date.seconds * 1000),
+      date: new Date(
+        doc.data().date.toDate().getTime() +
+          Math.abs(doc.data().date.toDate().getTimezoneOffset() * 60000)
+      ),
       id: doc.id,
     });
   });
-  console.log(result);
   res.status(200).send(result);
 }

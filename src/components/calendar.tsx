@@ -69,6 +69,7 @@ export default function Calendar() {
       })
     ).json();
     setEventModalNewWEditOpened(false);
+    getData();
   };
 
   const getEventsFromDate = (date: Date): CalendarEvent[] => {
@@ -222,6 +223,10 @@ export default function Calendar() {
         events={getEventsFromDate(
           new Date(selectedYear, selectedMonth, clickedDay)
         )}
+        onAddNewEvent={() => {
+          setEventModalViewOpened(false);
+          setEventModalNewWEditOpened(true);
+        }}
       />
     </>
   );
