@@ -1,4 +1,4 @@
-import { WeekDay } from "@/enums/weekday";
+import { LongWeekDay, ShortWeekDay } from "@/enums/weekday";
 import { Month } from "@/enums/month";
 import {
   differenceInCalendarDays,
@@ -13,6 +13,7 @@ import { CalendarEvent } from "@/types/calendarEvent";
 import getClassName from "@/utils/getClassName";
 import { ModalViewEvent } from "./modalViewEvents";
 import { normalizeDate } from "@/utils/normalizeDate";
+import { Input, Option, Select } from "@material-tailwind/react";
 
 export default function Calendar() {
   const weekDays = [0, 1, 2, 3, 4, 5, 6];
@@ -113,7 +114,9 @@ export default function Calendar() {
       daysElements.push(
         <button
           className={getClassName(
-            i > firstDayOfMonth ? "hover:bg-[#ecf0f1]" : "cursor-default",
+            i > firstDayOfMonth
+              ? "hover:bg-[#ecf0f1]"
+              : "cursor-default hidden md:block",
             i > firstDayOfMonth &&
               isWeekend(
                 new Date(selectedYear, selectedMonth, i - firstDayOfMonth)
@@ -140,6 +143,18 @@ export default function Calendar() {
             {i > firstDayOfMonth && (
               <>
                 <div className="text-right px-4">
+                  <span className="block md:hidden">
+                    {
+                      ShortWeekDay[
+                        new Date(
+                          selectedYear,
+                          selectedMonth,
+                          i - firstDayOfMonth
+                        ).getDay()
+                      ]
+                    }
+                    <br />
+                  </span>
                   <strong
                     className={getClassName(
                       differenceInCalendarDays(
@@ -180,35 +195,41 @@ export default function Calendar() {
 
   return (
     <>
-      <div>
-        <select
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(Number(e?.target?.value))}
-        >
-          {months.map((item) => {
-            return (
-              <option key={`month-${Month[item]}`} value={item}>
-                {Month[item]}
-              </option>
-            );
-          })}
-        </select>
-        <label htmlFor="year">Year</label>
-        <br />
-        <input
-          type="number"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(Number(e.target.value ?? undefined))}
-        />
+      <div className="bg-[#1abc9c] p-8 flex justify-center gap-8 flex-wrap">
+        <div className="max-w-[200px] [&>div>label]:before:border-white [&>div>label]:after:border-white [&>div>label]:text-white">
+          <Input
+            className="text-white border-white border-t-transparent"
+            required
+            label="YEAR"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+          />
+        </div>
+        <div className="max-w-[200px] [&>div>label]:before:border-white [&>div>label]:after:border-white [&>div>label]:text-white">
+          <Select
+            label="MONTH"
+            className="text-white border-white border-t-transparent [&>div]:text-white"
+            value={selectedMonth.toString()}
+            onChange={(value) => setSelectedMonth(Number(value))}
+          >
+            {months.map((item) => {
+              return (
+                <Option key={`month-${Month[item]}`} value={item.toString()}>
+                  {Month[item]}
+                </Option>
+              );
+            })}
+          </Select>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-7">
         {weekDays.map((item) => {
           return (
             <div
-              className="bg-[#2980b9] text-white text-center p-2"
-              key={`weekDay-${WeekDay[item]}`}
+              className="bg-[#2980b9] text-white text-center p-2  hidden md:block"
+              key={`weekDay-${LongWeekDay[item]}`}
             >
-              <strong>{WeekDay[item]}</strong>
+              <strong>{LongWeekDay[item]}</strong>
             </div>
           );
         })}

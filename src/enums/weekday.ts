@@ -1,4 +1,4 @@
-export enum WeekDay {
+export enum LongWeekDay {
   SUNDAY,
   MONDAY,
   TUESDAY,
@@ -6,4 +6,14 @@ export enum WeekDay {
   THURSDAY,
   FRIDAY,
   SATURDAY,
+}
+
+export enum ShortWeekDay {
+  SUN,
+  MON,
+  TUE,
+  WED,
+  THUR,
+  FRI,
+  SAT,
 }
