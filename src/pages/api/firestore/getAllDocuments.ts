@@ -30,10 +30,7 @@ export default async function handler(
   querySnapshot.forEach((doc) => {
     result.push({
       ...doc.data(),
-      date: new Date(
-        doc.data().date.toDate().getTime() +
-          Math.abs(doc.data().date.toDate().getTimezoneOffset() * 60000)
-      ),
+      date: new Date(doc.data().date.toDate()),
       id: doc.id,
     });
   });

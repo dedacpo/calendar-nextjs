@@ -74,9 +74,16 @@ export default function Calendar() {
 
   const getEventsFromDate = (date: Date): CalendarEvent[] => {
     const events =
-      eventsData?.filter(
-        (item) => differenceInCalendarDays(new Date(item.date), date) === 0
-      ) ?? [];
+      eventsData?.filter((item) => {
+        const itemDate = new Date(item.date);
+        return (
+          differenceInCalendarDays(
+            new Date(item.date).getTime() +
+              Math.abs(itemDate.getTimezoneOffset() * 60000),
+            date
+          ) === 0
+        );
+      }) ?? [];
 
     return events;
   };

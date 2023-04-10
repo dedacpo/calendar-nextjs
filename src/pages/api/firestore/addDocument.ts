@@ -1,9 +1,5 @@
 import { City } from "@/types/city";
-import {
-  DocumentData,
-  addDoc,
-  collection,
-} from "firebase/firestore";
+import { DocumentData, addDoc, collection } from "firebase/firestore";
 import { NextApiRequest, NextApiResponse } from "next";
 import { firestore } from "../../../../firebase/clientApp";
 
