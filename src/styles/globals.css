@@ -11,3 +11,11 @@
 .backdrop-blur-sm {
   overflow-y: auto;
 }
+
+
+@media only screen and (max-width: 768px) {
+  [role=dialog]{
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}

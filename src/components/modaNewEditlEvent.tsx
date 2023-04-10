@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, intlFormat } from "date-fns";
+import { addDays, differenceInCalendarDays, format, intlFormat } from "date-fns";
 import { Modal } from "./modal";
 import { useCallback, useState } from "react";
 import { City } from "@/types/city";
@@ -63,19 +63,26 @@ export function ModalNewEditEvent(props: {
     }
   };
 
+  const clearInfo = () => {
+    setSelectedCityIndex(undefined);
+    setWeatherInfo(undefined);
+    setCities(undefined);
+    setEventName(undefined);
+  }
+
   return (
     <>
       <Modal
         isOpen={isOpen}
-        handler={handler}
+        handler={() => {handler(); clearInfo()}}
         header={title}
         secondaryAction={{
           label: "cancel",
-          onClick: handler,
+          onClick: () => {handler(); clearInfo()},
         }}
         primaryAction={{
           label: "Submit",
-          onClick: () =>
+          onClick: () => {            
             submit({
               cityName: cities?.[selectedCityIndex ?? 0].formatted,
               date: clickedDate,
@@ -88,7 +95,9 @@ export function ModalNewEditEvent(props: {
               weatherIcon: weatherInfo?.weather[0].icon,
               weatherId: weatherInfo?.weather[0].id,
               weatherMain: weatherInfo?.weather[0].main,
-            } as CalendarEvent),
+            } as CalendarEvent);
+            clearInfo();
+          },
         }}
       >
         <div className="mt-4">
@@ -150,9 +159,11 @@ export function ModalNewEditEvent(props: {
                 />
               </div>
             </>
-          ) : (
-            <div className="my-4 flex">
-              <p className="m-auto">no weather information</p>
+          ) : selectedCityIndex && (           
+            <div className="my-4 flex">              
+              <p className="m-auto text-center">no weather information *<br/>
+              <small>We can only search for weather information for today and next 6 days from today (from {format(new Date(), 'MM/dd/yyyy')} to {format(addDays(new Date(), 7),'MM/dd/yyyy')})</small>
+              </p>
             </div>
           )}
         </div>

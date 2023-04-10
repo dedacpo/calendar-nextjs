@@ -143,7 +143,7 @@ export default function Calendar() {
             {i > firstDayOfMonth && (
               <>
                 <div className="text-right px-4">
-                  <span className="block md:hidden">
+                  <span className="block md:hidden pb-4">
                     {
                       ShortWeekDay[
                         new Date(
