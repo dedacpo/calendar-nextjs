@@ -79,7 +79,7 @@ export default function Calendar() {
       eventsData?.filter((item) => {
         const itemDate = new Date(item.date);
         return (
-          differenceInCalendarDays(new Date(normalizeDate(itemDate)), date) ===
+          differenceInCalendarDays(new Date(itemDate), date) ===
           0
         );
       }) ?? [];
