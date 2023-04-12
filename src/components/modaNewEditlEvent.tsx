@@ -134,7 +134,7 @@ export function ModalNewEditEvent(props: {
         primaryAction={{
           label: "Submit",
           onClick: () => {
-            submit({
+            const event = {
               cityName: cities?.[selectedCityIndex ?? 0].formatted,
               date: clickedDate,
               lat: cities?.[selectedCityIndex ?? 0].geometry.lat,
@@ -146,7 +146,11 @@ export function ModalNewEditEvent(props: {
               weatherIcon: weatherInfo?.weather[0].icon,
               weatherId: weatherInfo?.weather[0].id,
               weatherMain: weatherInfo?.weather[0].main,
-            } as CalendarEvent);
+            } as CalendarEvent
+            if(eventEdit?.id){
+              event['id'] = eventEdit?.id
+            }
+            submit(event);
             clearInfo();
           },
         }}
