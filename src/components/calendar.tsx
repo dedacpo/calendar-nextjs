@@ -47,6 +47,8 @@ export default function Calendar() {
   const [eventModalViewOpened, setEventModalViewOpened] =
     useState<boolean>(false);
 
+  const [eventBeingEdited, setEventBeingEdited] = useState<CalendarEvent>();
+
   const [clickedDay, setClickedDay] = useState<number>();
 
   const [eventsData, setEventsData] = useState<CalendarEvent[]>();
@@ -74,14 +76,27 @@ export default function Calendar() {
     getData();
   };
 
+  const deleteEvent = async (event: CalendarEvent) => {
+    await (
+      await fetch(`/api/firestore/deleteDocument`, {
+        method: "POST",
+        body: JSON.stringify({
+          id: event.id
+        }),
+      })
+    ).json();
+    setEventModalNewWEditOpened(false);
+          setEventBeingEdited(undefined);
+          setEventModalViewOpened(false);
+          getData();
+  };
+
+
   const getEventsFromDate = (date: Date): CalendarEvent[] => {
     const events =
       eventsData?.filter((item) => {
         const itemDate = new Date(item.date);
-        return (
-          differenceInCalendarDays(new Date(itemDate), date) ===
-          0
-        );
+        return differenceInCalendarDays(new Date(itemDate), date) === 0;
       }) ?? [];
 
     return events;
@@ -236,10 +251,14 @@ export default function Calendar() {
         {days?.map((item) => item)}
       </div>
       <ModalNewEditEvent
-        handler={() => setEventModalNewWEditOpened(false)}
+        handler={() => {
+          setEventModalNewWEditOpened(false);
+          setEventBeingEdited(undefined);
+        }}
         isOpen={eventModalNewWEditOpened}
         clickedDate={new Date(selectedYear, selectedMonth, clickedDay)}
         submit={eventSubmit}
+        eventEdit={eventBeingEdited}
       />
 
       <ModalViewEvent
@@ -249,10 +268,14 @@ export default function Calendar() {
         events={getEventsFromDate(
           new Date(selectedYear, selectedMonth, clickedDay)
         )}
-        onAddNewEvent={() => {
+        onAddNewEvent={(event) => {
+          setEventBeingEdited(event);
           setEventModalViewOpened(false);
           setEventModalNewWEditOpened(true);
         }}
+        onDeleteEvent={((event) => {
+          deleteEvent(event)
+        })}
       />
     </>
   );

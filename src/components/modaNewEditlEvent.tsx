@@ -5,7 +5,7 @@ import {
   intlFormat,
 } from "date-fns";
 import { Modal } from "./modal";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { City } from "@/types/city";
 import { Weather } from "@/types/weather";
 import { CalendarEvent } from "@/types/calendarEvent";
@@ -18,8 +18,12 @@ export function ModalNewEditEvent(props: {
   handler: () => void;
   clickedDate: Date;
   submit: (event: CalendarEvent) => void;
+  eventEdit?: CalendarEvent;
 }) {
-  const { isOpen, handler, clickedDate, submit } = props;
+  const { isOpen, handler, clickedDate, submit, eventEdit } = props;
+
+  console.log("eventEdit", eventEdit);
+  let eventWeather: Weather | undefined;
 
   const [cities, setCities] = useState<City[]>();
   const [selectedCityIndex, setSelectedCityIndex] = useState<number>();
@@ -28,6 +32,8 @@ export function ModalNewEditEvent(props: {
   const [selectedTemperature, setSelectedTemperature] = useState<
     "Kelvin" | "Celsius" | "Fahrenheit"
   >("Fahrenheit");
+
+  const [formattedCityName, setFormattedCityName] = useState<string>();
 
   const currentDate = new Date();
   const differenceDays = differenceInCalendarDays(clickedDate, currentDate);
@@ -55,24 +61,58 @@ export function ModalNewEditEvent(props: {
       await fetch(`/api/geocode/getCity?cityName=${value}`)
     ).json();
     setCities(resp.results);
+    console.log("eventEdit", eventEdit);
   };
 
   const handleWeather = async (value: number) => {
     if (cities) {
       const resp = await (
         await fetch(
-          `/api/openWeather/getWeather?lat=${cities[value].geometry.lat}&lng=${cities[value].geometry.lng}`
+          `/api/openWeather/getWeather?lat=${cities[value]?.geometry.lat}&lng=${cities[value]?.geometry.lng}`
         )
       ).json();
       setWeatherInfo(resp.daily[differenceDays]);
     }
   };
+  
+  useEffect(() => {
+    if (eventEdit) {
+      eventWeather = {
+        temp: {
+          max: eventEdit.temperatureMax,
+          min: eventEdit.temperatureMin,
+        },
+        weather: [
+          {
+            description: eventEdit.weatherDescr,
+            icon: eventEdit.weatherIcon,
+            id: eventEdit.weatherId,
+            main: eventEdit.weatherMain,
+          },
+        ],
+      };
+      setWeatherInfo(eventWeather);
+      setEventName(eventEdit.title);
+      setFormattedCityName(eventEdit.cityName);
+      setSelectedCityIndex(eventEdit.cityIndex);
+    }
+  }, [eventEdit, cities]);
+
+  useEffect(() => {
+    debouncedSave(formattedCityName);
+  }, [formattedCityName]);
+
+  // useEffect(() => {
+  //   console.log("cities", cities, eventEdit)
+  //   setSelectedCityIndex(eventEdit?.cityName)
+  // }, [cities]);
 
   const clearInfo = () => {
     setSelectedCityIndex(undefined);
     setWeatherInfo(undefined);
     setCities(undefined);
     setEventName(undefined);
+    setFormattedCityName(undefined);
   };
 
   return (
@@ -123,36 +163,42 @@ export function ModalNewEditEvent(props: {
           <Input
             required
             label="Event city"
+            value={formattedCityName}
             onChange={(e) => {
               debouncedSave(e.target.value);
+              setFormattedCityName(e.target.value);
             }}
           />
-          {cities && (
+          {cities && formattedCityName && (
             <div className="mt-4">
-              <Select
+              <select
                 value={selectedCityIndex?.toString()}
-                onChange={async (value) => {
-                  setSelectedCityIndex(Number(value));
+                onChange={(value) => {
+                  setSelectedCityIndex(Number(value.target.value));
                   if (differenceDays >= 0 && differenceDays < 7) {
-                    await handleWeather(Number(value));
+                    handleWeather(Number(value.target.value));
                   }
                 }}
-                label="Select a city"
               >
+                <option value={-1}>
+                  Select an option to get weather information for that city
+                </option>
+
                 {cities?.map((item: City, index) => {
                   return (
-                    <Option key={`option-${index}`} value={index.toString()}>
+                    <option key={`option-${index}`} value={index.toString()}>
                       {item.formatted}
-                    </Option>
+                    </option>
                   );
                 })}
-              </Select>
+              </select>
             </div>
           )}
-          {selectedCityIndex !== undefined &&
-          weatherInfo &&
-          differenceDays >= 0 &&
-          differenceDays < 7 ? (
+          {(selectedCityIndex !== undefined &&
+            weatherInfo &&
+            differenceDays >= 0 &&
+            differenceDays < 7) ||
+          (eventEdit && eventEdit.weatherId && weatherInfo) ? (
             <>
               <div className="flex justify-center mt-4">
                 <WeatherInfo
@@ -161,17 +207,17 @@ export function ModalNewEditEvent(props: {
                   event={
                     {
                       weatherIcon: weatherInfo?.weather[0].icon,
-                      temperatureMax: weatherInfo.temp.max,
-                      temperatureMin: weatherInfo.temp.min,
-                      weatherDescr: weatherInfo.weather[0].description,
-                      weatherMain: weatherInfo.weather[0].main,
+                      temperatureMax: weatherInfo?.temp.max,
+                      temperatureMin: weatherInfo?.temp.min,
+                      weatherDescr: weatherInfo?.weather[0].description,
+                      weatherMain: weatherInfo?.weather[0].main,
                     } as CalendarEvent
                   }
                 />
               </div>
             </>
           ) : (
-            selectedCityIndex && (
+            selectedCityIndex !== undefined && (
               <div className="my-4 flex">
                 <p className="m-auto text-center">
                   no weather information *<br />

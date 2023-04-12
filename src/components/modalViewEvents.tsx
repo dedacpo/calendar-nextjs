@@ -11,9 +11,10 @@ export function ModalViewEvent(props: {
   handler: () => void;
   clickedDate: Date;
   events: CalendarEvent[];
-  onAddNewEvent: () => void;
+  onAddNewEvent: (event?: CalendarEvent) => void;
+  onDeleteEvent: (event: CalendarEvent) => void
 }) {
-  const { isOpen, handler, clickedDate, events, onAddNewEvent } = props;
+  const { isOpen, handler, clickedDate, events, onAddNewEvent, onDeleteEvent } = props;
 
   const [selectedTemperature, setSelectedTemperature] = useState<
     "Kelvin" | "Celsius" | "Fahrenheit"
@@ -57,6 +58,24 @@ export function ModalViewEvent(props: {
                   />
                 </div>
               </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => {
+                    onAddNewEvent(item);
+                  }}
+                >
+                  edit event
+                </button>
+              </div>
+              <div className="flex justify-center text-red-600 mt-4">
+                <button
+                  onClick={() => {
+                    onDeleteEvent(item);
+                  }}
+                >
+                  delete event
+                </button>
+              </div>
             </Accordion>
           );
         })}
@@ -64,7 +83,7 @@ export function ModalViewEvent(props: {
           <Button
             variant="filled"
             color="teal"
-            onClick={onAddNewEvent}
+            onClick={() => onAddNewEvent()}
             className="mr-1 mt-6 text-2xl"
           >
             <span>+</span>
