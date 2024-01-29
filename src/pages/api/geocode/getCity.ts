@@ -1,7 +1,7 @@
 import { City } from "@/types/city";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const KEY = "ce5375e72d294ab79f45fcc7e9259571";
+const KEY = "f343f30004a54023a07b9b41f95cbd4b";
 const URL_API = "https://api.opencagedata.com/geocode/v1/json";
 
 export default async function handler(
