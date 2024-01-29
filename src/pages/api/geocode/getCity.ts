@@ -1,7 +1,7 @@
 import { City } from "@/types/city";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const KEY = "f343f30004a54023a07b9b41f95cbd4b";
+const KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
 const URL_API = "https://api.opencagedata.com/geocode/v1/json";
 
 export default async function handler(
