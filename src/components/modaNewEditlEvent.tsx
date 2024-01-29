@@ -61,7 +61,6 @@ export function ModalNewEditEvent(props: {
       await fetch(`/api/geocode/getCity?cityName=${value}`)
     ).json();
     setCities(resp.results);
-    console.log("eventEdit", eventEdit);
   };
 
   const handleWeather = async (value: number) => {

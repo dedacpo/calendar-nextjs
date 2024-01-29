@@ -2,7 +2,7 @@ import { City } from "@/types/city";
 import { Weather } from "@/types/weather";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const KEY = "f008710034ef815c313622f16e4d9e2c";
+const KEY = process.env.OPENCAGE_GEOCODE_API_KEY;
 const URL_API = "https://api.openweathermap.org/data/2.5/onecall";
 
 export default async function handler(
